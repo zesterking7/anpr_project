@@ -1,0 +1,6 @@
+train: ./dataset/images/train
+val: ./dataset/images/val
+test: ./dataset/images/test
+
+nc: 1  # Number of classes
+names: ['number plate']  # Class name

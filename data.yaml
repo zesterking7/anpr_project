@@ -1,0 +1,6 @@
+train: ./coco/images/train
+val: ./coco/images/val
+test: ./coco/images/test
+
+nc: 1  # Number of classes
+names: ['number plate']  # Class name

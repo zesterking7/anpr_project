@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>License Plate Recognition</title>
+</head>
+<body>
+    <h1>Live Camera Feed</h1>
+    <img src="{% url 'video_feed' %}" width="100%">
+    <br>
+    <a href="{% url 'plate_list' %}">View Recorded Plates</a>
+</body>
+</html>

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Recorded Plates</title>
+</head>
+<body>
+    <h1>Recorded Plates</h1>
+    <table>
+        <tr>
+            <th>Number Plate</th>
+            <th>Timestamp</th>
+            <th>Image</th>
+            <th>Action</th>
+        </tr>
+        {% for plate in plates %}
+        <tr>
+            <td>{{ plate.number_plate }}</td>
+            <td>{{ plate.timestamp }}</td>
+            <td><img src="{{ plate.image.url }}" width="100"></td>
+            <td><a href="{% url 'delete_plate' plate.id %}">Delete</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+    <br>
+    <a href="{% url 'index' %}">Back to Live Feed</a>
+</body>
+</html>
