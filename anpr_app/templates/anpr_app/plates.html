@@ -1,27 +1,35 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Recorded Plates</title>
-</head>
-<body>
-    <h1>Recorded Plates</h1>
-    <table>
+{% extends "base.html" %}
+
+{% block title %}Plate List{% endblock %}
+
+{% block content %}
+<h1>Detected Plates</h1>
+<a href="{% url 'index' %}" class="home-btn">
+    <i class="fas fa-home"></i> Home
+</a>
+<table>
+    <thead>
         <tr>
-            <th>Number Plate</th>
+            <th>Plate Number</th>
             <th>Timestamp</th>
             <th>Image</th>
-            <th>Action</th>
+            <th>Actions</th>
         </tr>
+    </thead>
+    <tbody>
         {% for plate in plates %}
         <tr>
             <td>{{ plate.number_plate }}</td>
             <td>{{ plate.timestamp }}</td>
-            <td><img src="{{ plate.image.url }}" width="100"></td>
-            <td><a href="{% url 'delete_plate' plate.id %}">Delete</a></td>
+            <td><img src="{{ plate.image.url }}" alt="{{ plate.number_plate }}" class="plate-image"></td>
+            <td>
+                <form action="{% url 'delete_plate' plate.id %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn delete-btn">Delete</button>
+                </form>
+            </td>
         </tr>
         {% endfor %}
-    </table>
-    <br>
-    <a href="{% url 'index' %}">Back to Live Feed</a>
-</body>
-</html>
+    </tbody>
+</table>
+{% endblock %}

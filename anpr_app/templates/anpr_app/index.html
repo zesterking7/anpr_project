@@ -1,12 +1,50 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>License Plate Recognition</title>
-</head>
-<body>
-    <h1>Live Camera Feed</h1>
-    <img src="{% url 'video_feed' %}" width="100%">
-    <br>
-    <a href="{% url 'plate_list' %}">View Recorded Plates</a>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}Live Camera Feed{% endblock %}
+
+{% block content %}
+<h1>License Plate Recognition</h1>
+<div class="controls">
+    <button id="start-btn" class="btn">Start Camera</button>
+    <button id="stop-btn" class="btn">Stop Camera</button>
+    <a href="{% url 'plate_list' %}" class="btn">View Plates</a>
+</div>
+<div class="video-container">
+    <img id="video" src="{% url 'video_feed' %}" alt="Camera Feed">
+</div>
+<script>
+    $(document).ready(function() {
+        $('#start-btn').click(function() {
+            $.ajax({
+                url: '{% url "start_camera" %}',
+                type: 'POST',
+                data: {
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    alert(response.status);
+                },
+                error: function(response) {
+                    alert('Failed to start camera: ' + response.statusText);
+                }
+            });
+        });
+
+        $('#stop-btn').click(function() {
+            $.ajax({
+                url: '{% url "stop_camera" %}',
+                type: 'POST',
+                data: {
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    alert(response.status);
+                },
+                error: function(response) {
+                    alert('Failed to stop camera: ' + response.statusText);
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

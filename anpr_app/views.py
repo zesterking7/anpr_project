@@ -3,19 +3,24 @@ from django.http import StreamingHttpResponse
 from .models import LicensePlate
 import cv2
 from django.utils import timezone
-from django.core.files.base import ContentFile
 from ultralytics import YOLO
-import numpy as np
 import easyocr
-from datetime import datetime
+from django.http import StreamingHttpResponse, JsonResponse
+from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
+from .models import LicensePlate
+from django.utils import timezone
+import cv2
 
 # Load YOLOv8 model
 model = YOLO("yolov8n.pt")  # replace with your trained model path
 
+camera = None
 
 reader = easyocr.Reader(['en'])
 
 def gen_frames():
+    global camera
     camera = cv2.VideoCapture(0)
 
     if not camera.isOpened():
@@ -23,10 +28,11 @@ def gen_frames():
         return
     
     while True:
-        success, frame = camera.read()
-        if not success:
-            break
-        else:
+        if camera and camera.isOpened():
+            success, frame = camera.read()
+            if not success:
+                break
+
             # Process frame and detect license plates
             results = model(frame)
             for result in results:  # Assuming the result format is xyxy
@@ -44,8 +50,9 @@ def gen_frames():
                             #saving data to database
                             print(f"saved license plate: {text}")
                             if not LicensePlate.objects.filter(number_plate=text).exists():
+                                image_path = f'media/detected_plates/{timezone.now().strftime('%Y%m%d_%H%M%S')}.jpg'
                                 image_name = f'detected_plates/{timezone.now().strftime('%Y%m%d_%H%M%S')}.jpg'
-                                cv2.imwrite(image_name, plate_img)
+                                cv2.imwrite(image_path, plate_img)
                                 LicensePlate.objects.create(number_plate=text, image=image_name)
 
                             # Draw bounding box and plate number on frame
@@ -55,12 +62,11 @@ def gen_frames():
             frame = buffer.tobytes()
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+        else:
+            break
 
 def index(request):
     return render(request, 'anpr_app/index.html')
-
-def video_feed(request):
-    return StreamingHttpResponse(gen_frames(), content_type='multipart/x-mixed-replace; boundary=frame')
 
 def plate_list(request):
     plates = LicensePlate.objects.all()
@@ -70,3 +76,28 @@ def delete_plate(request, plate_id):
     plate = LicensePlate.objects.get(id=plate_id)
     plate.delete()
     return redirect('plate_list')
+
+
+def video_feed(request):
+    return StreamingHttpResponse(gen_frames(), content_type='multipart/x-mixed-replace; boundary=frame')
+
+@csrf_exempt
+def start_camera(request):
+    global camera
+    if camera is None or not camera.isOpened():
+        camera = cv2.VideoCapture(0)  # Change the index if you have multiple cameras
+        if camera.isOpened():
+            return JsonResponse({'status': 'Camera started'})
+        else:
+            camera = None
+            return JsonResponse({'status': 'Failed to start camera'}, status=500)
+    return JsonResponse({'status': 'Camera already running'})
+
+@csrf_exempt
+def stop_camera(request):
+    global camera
+    if camera and camera.isOpened():
+        camera.release()
+        camera = None
+        return JsonResponse({'status': 'Camera stopped'})
+    return JsonResponse({'status': 'Camera not running'})
