@@ -69,7 +69,7 @@ def index(request):
     return render(request, 'anpr_app/index.html')
 
 def plate_list(request):
-    plates = LicensePlate.objects.all()
+    plates = LicensePlate.objects.all().order_by('-timestamp')
     return render(request, 'anpr_app/plates.html', {'plates': plates})
 
 def delete_plate(request, plate_id):

@@ -4,13 +4,16 @@
 
 {% block content %}
 <h1>Detected Plates</h1>
+
 <a href="{% url 'index' %}" class="home-btn">
     <i class="fas fa-home"></i> Home
 </a>
+
 <table>
     <thead>
         <tr>
             <th>Plate Number</th>
+            <th>Toll Amount (₹)</th>  <!-- ✅ Added Toll Amount Column -->
             <th>Timestamp</th>
             <th>Image</th>
             <th>Actions</th>
@@ -20,8 +23,15 @@
         {% for plate in plates %}
         <tr>
             <td>{{ plate.number_plate }}</td>
+            <td>₹{{ plate.toll_amount }}</td>  <!-- ✅ Display Toll Amount -->
             <td>{{ plate.timestamp }}</td>
-            <td><img src="{{ plate.image.url }}" alt="{{ plate.number_plate }}" class="plate-image"></td>
+            <td>
+                {% if plate.image %}
+                    <img src="{{ plate.image.url }}" alt="{{ plate.number_plate }}" class="plate-image">
+                {% else %}
+                    No Image
+                {% endif %}
+            </td>
             <td>
                 <form action="{% url 'delete_plate' plate.id %}" method="post">
                     {% csrf_token %}
